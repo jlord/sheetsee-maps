@@ -2,7 +2,7 @@
   "name": "sheetsee-maps",
   "version": "0.0.0",
   "description": "enables map creation functionality with sheetsee.js",
-  "main": "sheetsee-maps.js",
+  "main": "index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/jlord/sheetsee-maps.git"
@@ -17,6 +17,6 @@
     "maps"
   ],
   "dependencies": {
-    "mapbox.js": "~1.3.1",
+    "mapbox.js": "~1.3.1"
   },
 }
