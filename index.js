@@ -8,21 +8,33 @@ module.exports.buildOptionObject = function(optionsJSON, lineItem) {
   return newObj
 }
 
+module.exports.makeupOptionObject = function(lineItem) {
+  var options = []
+  for (var i in lineItem) {
+    options.push(i);
+  }
+  return options
+}
+
 // for geocoding: http://mapbox.com/tilemill/docs/guides/google-docs/#geocoding
 // create geoJSON from your spreadsheet's coordinates
 module.exports.createGeoJSON = function(data, optionsJSON) {
   var geoJSON = []
   data.forEach(function(lineItem){
-    // skip if there are no coords
     var hasGeo = false
-    if (lineItem.lat || lineItem.long || lineItem.polygon) hasGeo = true
+    if (lineItem.lat && lineItem.long || lineItem.polygon) hasGeo = true
     if (lineItem.linestring || lineItem.multipolygon) hasGeo = true
     if (!hasGeo) return
 
-    // type of coors
+    if (!optionsJSON) {
+      optionsJSON = makeupOptionObject(lineItem)
+      var optionObj = buildOptionObject(optionsJSON, lineItem)
+    } else {
+      optionObj = buildOptionObject(optionsJSON, lineItem)
+    }
+
     var type = determineType(lineItem)
-    
-    if (optionsJSON) var optionObj = buildOptionObject(optionsJSON, lineItem)
+
     if (lineItem.polygon || lineItem.multipolygon || lineItem.linestring) {
       var shapeFeature = shapeJSON(lineItem, type, optionObj)
       geoJSON.push(shapeFeature)
@@ -46,7 +58,7 @@ module.exports.pointJSON = function(lineItem, type, optionObj) {
           "marker-size": "small",
           "marker-color": lineItem.hexcolor
         },
-        "opts": optionObj,
+        "opts": optionObj
       }
   return pointFeature
 }
@@ -90,15 +102,53 @@ module.exports.loadMap = function(mapDiv) {
 }
 
 module.exports.addTileLayer = function(map, tileLayer) {
- var layer = L.mapbox.tileLayer(tileLayer)
- layer.addTo(map)
+  var layer = L.mapbox.tileLayer(tileLayer)
+  layer.addTo(map)
 }
 
-module.exports.addMarkerLayer = function(geoJSON, map, zoomLevel) { 
+module.exports.makePopupTemplate = function(geoJSON) {
+  var allOptions = geoJSON[0].opts
+  var keys = [] 
+  for (var i in allOptions) keys.push(i)
+
+  var mustacheKeys = mustachify(keys)
+
+  var template = {}
+  template.name ="popup"
+  template.template = templateString(mustacheKeys)
+  return template
+}
+
+module.exports.templateString = function(mustacheKeys) {
+  var template = "<ul>"
+  var counter = mustacheKeys.length
+  mustacheKeys.forEach(function(key) {
+    counter--
+    if (counter === 0) template = template.concat(key, "</ul>")
+    else template = template.concat(key)
+  })
+  return template
+}
+
+module.exports.mustachify = function(array) {
+  var newArray = []
+  array.forEach(function(item) {
+    item = "<li><b>" + item + ":</b> {{" + item + "}}</li>"
+    newArray.push(item)
+  })
+  return newArray
+}
+
+module.exports.addMarkerLayer = function(geoJSON, map, template) { 
+  if (!template) {
+    template = makePopupTemplate(geoJSON)
+    ich.addTemplate(template.name, template.template)
+  }
   var features = {
     "type": "FeatureCollection",
     "features": geoJSON
   }
+
   var layer = L.geoJson(features, {
     pointToLayer: L.mapbox.marker.style,
     style: function(feature) { return feature.properties }
@@ -106,5 +156,10 @@ module.exports.addMarkerLayer = function(geoJSON, map, zoomLevel) {
   var bounds = layer.getBounds()
   layer.addTo(map)
   map.fitBounds(bounds)
+
+  layer.eachLayer(function(marker) {
+    var popupContent = ich["popup"](marker.feature.opts)
+    marker.bindPopup(popupContent, {closeButton: false,})
+  })
   return layer
 }
