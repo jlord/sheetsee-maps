@@ -1,6 +1,8 @@
 var mapbox = require('mapbox.js')
+var ich = require('icanhaz')
 
-module.exports.buildOptionObject = function(optionsJSON, lineItem) {
+module.exports.buildOptionObject = buildOptionObject
+function buildOptionObject(optionsJSON, lineItem) {
   var newObj = {}
   optionsJSON.forEach(function(option) {
     newObj[option] = lineItem[option]
@@ -46,12 +48,13 @@ module.exports.createGeoJSON = function(data, optionsJSON) {
   return geoJSON
 }
 
-module.exports.pointJSON = function(lineItem, type, optionObj) {
+module.exports.pointJSON = pointJSON 
+function pointJSON(lineItem, type, optionObj) {
   var lowercaseType = type.toLowerCase()
   var pointFeature = {
         type: "Feature",
         "geometry": {
-          "type": type, 
+          "type": type,
           "coordinates": [+lineItem.long, +lineItem.lat]
         },
         "properties": {
@@ -72,7 +75,7 @@ module.exports.shapeJSON = function(lineItem, type, optionObj) {
   var shapeFeature = {
         type: "Feature",
         "geometry": {
-          "type": type, 
+          "type": type,
           "coordinates": coords
         },
         "properties": {
@@ -84,7 +87,8 @@ module.exports.shapeJSON = function(lineItem, type, optionObj) {
   return shapeFeature
 }
 
-module.exports.determineType = function(lineItem) {
+module.exports.determineType = determineType
+function determineType(lineItem) {
   var type = ""
   if (lineItem.lat && lineItem.long) type = "Point"
   if (lineItem.polygon) type = "Polygon"
@@ -106,9 +110,10 @@ module.exports.addTileLayer = function(map, tileLayer) {
   layer.addTo(map)
 }
 
-module.exports.makePopupTemplate = function(geoJSON) {
+module.exports.makePopupTemplate = makePopupTemplate
+function makePopupTemplate(geoJSON) {
   var allOptions = geoJSON[0].opts
-  var keys = [] 
+  var keys = []
   for (var i in allOptions) keys.push(i)
 
   var mustacheKeys = mustachify(keys)
@@ -119,7 +124,8 @@ module.exports.makePopupTemplate = function(geoJSON) {
   return template
 }
 
-module.exports.templateString = function(mustacheKeys) {
+module.exports.templateString = templateString
+function templateString(mustacheKeys) {
   var template = "<ul>"
   var counter = mustacheKeys.length
   mustacheKeys.forEach(function(key) {
@@ -130,7 +136,8 @@ module.exports.templateString = function(mustacheKeys) {
   return template
 }
 
-module.exports.mustachify = function(array) {
+module.exports.mustachify = mustachify 
+function mustachify(array) {
   var newArray = []
   array.forEach(function(item) {
     item = "<li><b>" + item + ":</b> {{" + item + "}}</li>"
@@ -139,16 +146,20 @@ module.exports.mustachify = function(array) {
   return newArray
 }
 
-module.exports.addMarkerLayer = function(geoJSON, map, template) { 
+module.exports.addMarkerLayer = function(geoJSON, map, template) {
   if (!template) {
     template = makePopupTemplate(geoJSON)
     ich.addTemplate(template.name, template.template)
+  }
+  else {
+   var template = {"template": template}
+   template.name = "popup"
+   ich.addTemplate(template.name, template.template)
   }
   var features = {
     "type": "FeatureCollection",
     "features": geoJSON
   }
-
   var layer = L.geoJson(features, {
     pointToLayer: L.mapbox.marker.style,
     style: function(feature) { return feature.properties }
@@ -158,8 +169,8 @@ module.exports.addMarkerLayer = function(geoJSON, map, template) {
   map.fitBounds(bounds)
 
   layer.eachLayer(function(marker) {
-    var popupContent = ich["popup"](marker.feature.opts)
-    marker.bindPopup(popupContent, {closeButton: false,})
+    var popupContent = ich[template.name](marker.feature.opts)
+    marker.bindPopup(popupContent.html(), {closeButton: false})
   })
   return layer
 }

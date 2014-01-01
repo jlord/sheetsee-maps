@@ -17,6 +17,7 @@
     "maps"
   ],
   "dependencies": {
-    "mapbox.js": "~1.3.1"
+    "mapbox.js": "~1.3.1",
+    "icanhaz": "~0.10.3"
   }
 }
