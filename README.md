@@ -77,7 +77,7 @@ Example template:
 var popupTemplate = "<h4>Hello {{name}}</h4>"
 ```
 
-#### Source from the [map demo](/demos/demo-map.html):
+#### Source from the [map demo](https://github.com/jlord/sheetsee.js/blob/master/demos/demo-map.html):
 
 ```JavaScript
 <script type="text/javascript">
