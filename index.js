@@ -24,7 +24,6 @@ module.exports.createGeoJSON = function(data, optionsJSON) {
     var hasGeo = confirmGeo(lineItem)
 
     if (hasGeo && !lineItem.lat && !lineItem.long) handleLatLong(lineItem)
-    console.log("New Line", lineItem)
     if (lineItem.linestring || lineItem.multipolygon) hasGeo = true
     if (!hasGeo) return
 
