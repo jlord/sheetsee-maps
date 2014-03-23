@@ -23,8 +23,8 @@ module.exports.makeupOptionObject = function(lineItem) {
 module.exports.createGeoJSON = function(data, optionsJSON) {
   var geoJSON = []
   data.forEach(function(lineItem){
-    var hasGeo = false
-    if (lineItem.lat && lineItem.long || lineItem.polygon) hasGeo = true
+    var hasGeo = checkLatLong(lineItem)
+    // if (lineItem.lat && lineItem.long || lineItem.polygon) hasGeo = true
     if (lineItem.linestring || lineItem.multipolygon) hasGeo = true
     if (!hasGeo) return
 
@@ -48,7 +48,16 @@ module.exports.createGeoJSON = function(data, optionsJSON) {
   return geoJSON
 }
 
-module.exports.pointJSON = pointJSON 
+module.exports.checkLatLong = checkLatLong
+function checkLatLong(lineItem) {
+  var hasGeo = false
+  if (lineItem.lat && lineItem.long || lineItem.polygon) hasGeo = true
+  if (lineItem.latitude && lineItem.longitude || lineItem.polygon) hasGeo = true
+  if (lineItem.geo_latitude && lineItem.geo_longitude || lineItem.polygon) hasGeo = true
+  return hasGeo
+}
+
+module.exports.pointJSON = pointJSON
 function pointJSON(lineItem, type, optionObj) {
   var lowercaseType = type.toLowerCase()
   var pointFeature = {
@@ -136,7 +145,7 @@ function templateString(mustacheKeys) {
   return template
 }
 
-module.exports.mustachify = mustachify 
+module.exports.mustachify = mustachify
 function mustachify(array) {
   var newArray = []
   array.forEach(function(item) {
