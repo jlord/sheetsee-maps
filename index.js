@@ -18,13 +18,13 @@ module.exports.makeupOptionObject = function(lineItem) {
   return options
 }
 
-// for geocoding: http://mapbox.com/tilemill/docs/guides/google-docs/#geocoding
-// create geoJSON from your spreadsheet's coordinates
 module.exports.createGeoJSON = function(data, optionsJSON) {
   var geoJSON = []
   data.forEach(function(lineItem){
-    var hasGeo = checkLatLong(lineItem)
-    // if (lineItem.lat && lineItem.long || lineItem.polygon) hasGeo = true
+    var hasGeo = confirmGeo(lineItem)
+
+    if (hasGeo && !lineItem.lat && !lineItem.long) handleLatLong(lineItem)
+    console.log("New Line", lineItem)
     if (lineItem.linestring || lineItem.multipolygon) hasGeo = true
     if (!hasGeo) return
 
@@ -41,20 +41,38 @@ module.exports.createGeoJSON = function(data, optionsJSON) {
       var shapeFeature = shapeJSON(lineItem, type, optionObj)
       geoJSON.push(shapeFeature)
     } else {
-      var poitnFeature = pointJSON(lineItem, type, optionObj)
-      geoJSON.push(poitnFeature)
+      var pointFeature = pointJSON(lineItem, type, optionObj)
+      geoJSON.push(pointFeature)
       }
   })
   return geoJSON
 }
 
-module.exports.checkLatLong = checkLatLong
-function checkLatLong(lineItem) {
+module.exports.confirmGeo = confirmGeo
+function confirmGeo(lineItem) {
   var hasGeo = false
   if (lineItem.lat && lineItem.long || lineItem.polygon) hasGeo = true
   if (lineItem.latitude && lineItem.longitude || lineItem.polygon) hasGeo = true
-  if (lineItem.geo_latitude && lineItem.geo_longitude || lineItem.polygon) hasGeo = true
+  if (lineItem.geolatitude && lineItem.geolongitude || lineItem.polygon) hasGeo = true
   return hasGeo
+}
+
+module.exports.handleLatLong = handleLatLong
+function handleLatLong(lineItem) {
+  if (lineItem.latitude && lineItem.longitude || lineItem.polygon) {
+    lineItem.lat = lineItem.latitude
+    lineItem.long = lineItem.longitude
+    delete lineItem.latitude
+    delete lineItem.longitude
+    return lineItem
+  }
+  if (lineItem.geolatitude && lineItem.geolongitude || lineItem.polygon) {
+    lineItem.lat = lineItem.geolatitude
+    lineItem.long = lineItem.geolongitude
+    delete lineItem.geolatitude
+    delete lineItem.geolongitude
+    return lineItem
+  }
 }
 
 module.exports.pointJSON = pointJSON
