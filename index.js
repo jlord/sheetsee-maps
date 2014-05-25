@@ -92,7 +92,8 @@ function pointJSON(lineItem, type, optionObj) {
   return pointFeature
 }
 
-module.exports.shapeJSON = function(lineItem, type, optionObj) {
+module.exports.shapeJSON = shapeJSON
+function shapeJSON(lineItem, type, optionObj) {
   var lowercaseType = type.toLowerCase()
   var coords
   if (type !== "LineString") {
