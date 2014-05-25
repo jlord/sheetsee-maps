@@ -1,6 +1,6 @@
 {
   "name": "sheetsee-maps",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "enables map creation functionality with sheetsee.js",
   "main": "index.js",
   "repository": {
