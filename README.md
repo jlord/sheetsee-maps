@@ -88,9 +88,9 @@ Sheetsee.addTileLayer(map, 'examples.map-20v6611k')
 
 You can add tiles from awesome mapmakers like [Stamen](examples.map-20v6611k) or create your own in Mapbox's [Tilemill](http://www.mapbox.com/tilemill) or [online](https://tiles.mapbox.com/newmap#3.00/0.00/0.00).
 
-### Sheetsee.addMarkerLayer(geoJSON, map)
+### Sheetsee.addMarkerLayer(geoJSON, map, popupTemplate, clusterMarkers)
 
-To add makers, lines or shapes to your map, use this function and pass in your **geoJSON** so that it can get the coordinates and your **map** so that it places the markers there. You can customize what the content in your marker's popup looks like with a **popupTemplate**, which is an ICanHaz.js template in HTML and can reference the column headers you included in your optionsJSON.
+To add markers, lines or shapes to your map, use this function and pass in your **geoJSON** so that it can get the coordinates and your **map** so that it places the markers there. You can customize what the content in your marker's popup looks like with a **popupTemplate**, which is an ICanHaz.js template in HTML and can reference the column headers you included in your optionsJSON. You can set `true` or `false` (default `false`) to **culsterMarkers** to enable marker clusters on your map.
 
 ```javascript
 var markerLayer = Sheetsee.addMarkerLayer(geoJSON, map, popupTemplate)
