@@ -2,25 +2,25 @@ var mapbox = require('mapbox.js')
 var ich = require('icanhaz')
 
 module.exports.buildOptionObject = buildOptionObject
-function buildOptionObject(optionsJSON, lineItem) {
+function buildOptionObject (optionsJSON, lineItem) {
   var newObj = {}
-  optionsJSON.forEach(function(option) {
+  optionsJSON.forEach(function (option) {
     newObj[option] = lineItem[option]
   })
   return newObj
 }
 
-module.exports.makeupOptionObject = function(lineItem) {
+module.exports.makeupOptionObject = function (lineItem) {
   var options = []
   for (var i in lineItem) {
-    options.push(i);
+    options.push(i)
   }
   return options
 }
 
-module.exports.createGeoJSON = function(data, optionsJSON) {
+module.exports.createGeoJSON = function (data, optionsJSON) {
   var geoJSON = []
-  data.forEach(function(lineItem){
+  data.forEach(function (lineItem) {
     var hasGeo = confirmGeo(lineItem)
 
     if (hasGeo && !lineItem.lat && !lineItem.long) handleLatLong(lineItem)
@@ -42,13 +42,13 @@ module.exports.createGeoJSON = function(data, optionsJSON) {
     } else {
       var pointFeature = pointJSON(lineItem, type, optionObj)
       geoJSON.push(pointFeature)
-      }
+    }
   })
   return geoJSON
 }
 
 module.exports.confirmGeo = confirmGeo
-function confirmGeo(lineItem) {
+function confirmGeo (lineItem) {
   var hasGeo = false
   if (lineItem.lat && lineItem.long || lineItem.polygon) hasGeo = true
   if (lineItem.latitude && lineItem.longitude || lineItem.polygon) hasGeo = true
@@ -57,7 +57,7 @@ function confirmGeo(lineItem) {
 }
 
 module.exports.handleLatLong = handleLatLong
-function handleLatLong(lineItem) {
+function handleLatLong (lineItem) {
   if (lineItem.latitude && lineItem.longitude || lineItem.polygon) {
     lineItem.lat = lineItem.latitude
     lineItem.long = lineItem.longitude
@@ -75,56 +75,56 @@ function handleLatLong(lineItem) {
 }
 
 module.exports.pointJSON = pointJSON
-function pointJSON(lineItem, type, optionObj) {
+function pointJSON (lineItem, type, optionObj) {
   var lowercaseType = type.toLowerCase()
   var pointFeature = {
-        type: "Feature",
-        "geometry": {
-          "type": type,
-          "coordinates": [+lineItem.long, +lineItem.lat]
-        },
-        "properties": {
-          "marker-size": "small",
-          "marker-color": lineItem.hexcolor
-        },
-        "opts": optionObj
-      }
+    type: 'Feature',
+    'geometry': {
+      'type': type,
+      'coordinates': [+lineItem.long, +lineItem.lat]
+    },
+    'properties': {
+      'marker-size': 'small',
+      'marker-color': lineItem.hexcolor
+    },
+    'opts': optionObj
+  }
   return pointFeature
 }
 
 module.exports.shapeJSON = shapeJSON
-function shapeJSON(lineItem, type, optionObj) {
+function shapeJSON (lineItem, type, optionObj) {
   var lowercaseType = type.toLowerCase()
   var coords
-  if (type !== "LineString") {
-    coords = JSON.parse( "[[" + lineItem[lowercaseType] + "]]" )
-  } else { coords = JSON.parse("[" + lineItem[lowercaseType] + "]") }
+  if (type !== 'LineString') {
+    coords = JSON.parse('[[' + lineItem[lowercaseType] + ']]')
+  } else { coords = JSON.parse('[' + lineItem[lowercaseType] + ']') }
   var shapeFeature = {
-        type: "Feature",
-        "geometry": {
-          "type": type,
-          "coordinates": coords
-        },
-        "properties": {
-          "fillColor": lineItem.hexcolor,
-          "color": lineItem.hexcolor
-        },
-        "opts": optionObj
-      }
+    type: 'Feature',
+    'geometry': {
+      'type': type,
+      'coordinates': coords
+    },
+    'properties': {
+      'fillColor': lineItem.hexcolor,
+      'color': lineItem.hexcolor
+    },
+    'opts': optionObj
+  }
   return shapeFeature
 }
 
 module.exports.determineType = determineType
-function determineType(lineItem) {
-  var type = ""
-  if (lineItem.lat && lineItem.long) type = "Point"
-  if (lineItem.polygon) type = "Polygon"
-  if (lineItem.multipolygon) type = "MultiPolygon"
-  if (lineItem.linestring) type = "LineString"
+function determineType (lineItem) {
+  var type = ''
+  if (lineItem.lat && lineItem.long) type = 'Point'
+  if (lineItem.polygon) type = 'Polygon'
+  if (lineItem.multipolygon) type = 'MultiPolygon'
+  if (lineItem.linestring) type = 'LineString'
   return type
 }
 
-module.exports.loadMap = function(mapDiv) {
+module.exports.loadMap = function (mapDiv) {
   var map = L.mapbox.map(mapDiv)
   map.touchZoom.disable()
   map.doubleClickZoom.disable()
@@ -132,13 +132,13 @@ module.exports.loadMap = function(mapDiv) {
   return map
 }
 
-module.exports.addTileLayer = function(map, tileLayer) {
+module.exports.addTileLayer = function (map, tileLayer) {
   var layer = L.mapbox.tileLayer(tileLayer)
   layer.addTo(map)
 }
 
 module.exports.makePopupTemplate = makePopupTemplate
-function makePopupTemplate(geoJSON) {
+function makePopupTemplate (geoJSON) {
   var allOptions = geoJSON[0].opts
   var keys = []
   for (var i in allOptions) keys.push(i)
@@ -146,50 +146,49 @@ function makePopupTemplate(geoJSON) {
   var mustacheKeys = mustachify(keys)
 
   var template = {}
-  template.name = "popup" + Math.random()
+  template.name = 'popup' + Math.random()
   template.template = templateString(mustacheKeys)
   return template
 }
 
 module.exports.templateString = templateString
-function templateString(mustacheKeys) {
-  var template = "<ul>"
+function templateString (mustacheKeys) {
+  var template = '<ul>'
   var counter = mustacheKeys.length
-  mustacheKeys.forEach(function(key) {
+  mustacheKeys.forEach(function (key) {
     counter--
-    if (counter === 0) template = template.concat(key, "</ul>")
+    if (counter === 0) template = template.concat(key, '</ul>')
     else template = template.concat(key)
   })
   return template
 }
 
 module.exports.mustachify = mustachify
-function mustachify(array) {
+function mustachify (array) {
   var newArray = []
-  array.forEach(function(item) {
-    item = "<li><b>" + item + ":</b> {{" + item + "}}</li>"
+  array.forEach(function (item) {
+    item = '<li><b>' + item + ':</b> {{' + item + '}}</li>'
     newArray.push(item)
   })
   return newArray
 }
 
-module.exports.addMarkerLayer = function(geoJSON, map, template, clusterMarkers) {
+module.exports.addMarkerLayer = function (geoJSON, map, template, clusterMarkers) {
   if (!template) {
     template = makePopupTemplate(geoJSON)
     ich.addTemplate(template.name, template.template)
-  }
-  else {
-   var template = {"template": template}
-   template.name = "popup" + Math.random()
-   ich.addTemplate(template.name, template.template)
+  } else {
+    template = {'template': template}
+    template.name = 'popup' + Math.random()
+    ich.addTemplate(template.name, template.template)
   }
   var features = {
-    "type": "FeatureCollection",
-    "features": geoJSON
+    'type': 'FeatureCollection',
+    'features': geoJSON
   }
   var layer = L.geoJson(features, {
     pointToLayer: L.mapbox.marker.style,
-    style: function(feature) { return feature.properties }
+    style: function (feature) { return feature.properties }
   })
   var bounds = layer.getBounds()
 
@@ -201,7 +200,7 @@ module.exports.addMarkerLayer = function(geoJSON, map, template, clusterMarkers)
 
   map.fitBounds(bounds)
 
-  layer.eachLayer(function(marker) {
+  layer.eachLayer(function (marker) {
     var popupContent = ich[template.name](marker.feature.opts)
     marker.bindPopup(popupContent.html(), {closeButton: false})
     if (cluster) {
