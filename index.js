@@ -1,5 +1,5 @@
-// var mapbox = require('mapbox.js')
-// var ich = require('icanhaz')
+var mapbox = require('mapbox.js')
+var ich = require('icanhaz')
 
 function createGeoJSON (data, optionsJSON) {
   var geoJSON = []
