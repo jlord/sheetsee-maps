@@ -1,21 +1,5 @@
-var mapbox = require('mapbox.js')
-var ich = require('icanhaz')
-
-function buildOptionObject (optionsJSON, lineItem) {
-  var newObj = {}
-  optionsJSON.forEach(function (option) {
-    newObj[option] = lineItem[option]
-  })
-  return newObj
-}
-
-function makeupOptionObject (lineItem) {
-  var options = []
-  for (var i in lineItem) {
-    options.push(i)
-  }
-  return options
-}
+// var mapbox = require('mapbox.js')
+// var ich = require('icanhaz')
 
 function createGeoJSON (data, optionsJSON) {
   var geoJSON = []
@@ -45,6 +29,23 @@ function createGeoJSON (data, optionsJSON) {
   })
   return geoJSON
 }
+
+function buildOptionObject (optionsJSON, lineItem) {
+  var newObj = {}
+  optionsJSON.forEach(function (option) {
+    newObj[option] = lineItem[option]
+  })
+  return newObj
+}
+
+function makeupOptionObject (lineItem) {
+  var options = []
+  for (var i in lineItem) {
+    options.push(i)
+  }
+  return options
+}
+
 
 function confirmGeo (lineItem) {
   var hasGeo = false
@@ -111,6 +112,7 @@ function shapeJSON (lineItem, type, optionObj) {
 
 function determineType (lineItem) {
   var type = ''
+  // TODO this is not actually verifying the content just the property
   if (lineItem.lat && lineItem.long) type = 'Point'
   if (lineItem.polygon) type = 'Polygon'
   if (lineItem.multipolygon) type = 'MultiPolygon'
