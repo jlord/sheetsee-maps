@@ -1,7 +1,6 @@
 var mapbox = require('mapbox.js')
 var ich = require('icanhaz')
 
-module.exports.buildOptionObject = buildOptionObject
 function buildOptionObject (optionsJSON, lineItem) {
   var newObj = {}
   optionsJSON.forEach(function (option) {
@@ -10,7 +9,7 @@ function buildOptionObject (optionsJSON, lineItem) {
   return newObj
 }
 
-module.exports.makeupOptionObject = function (lineItem) {
+function makeupOptionObject (lineItem) {
   var options = []
   for (var i in lineItem) {
     options.push(i)
@@ -18,7 +17,7 @@ module.exports.makeupOptionObject = function (lineItem) {
   return options
 }
 
-module.exports.createGeoJSON = function (data, optionsJSON) {
+function createGeoJSON (data, optionsJSON) {
   var geoJSON = []
   data.forEach(function (lineItem) {
     var hasGeo = confirmGeo(lineItem)
@@ -47,7 +46,6 @@ module.exports.createGeoJSON = function (data, optionsJSON) {
   return geoJSON
 }
 
-module.exports.confirmGeo = confirmGeo
 function confirmGeo (lineItem) {
   var hasGeo = false
   if (lineItem.lat && lineItem.long || lineItem.polygon) hasGeo = true
@@ -56,7 +54,6 @@ function confirmGeo (lineItem) {
   return hasGeo
 }
 
-module.exports.handleLatLong = handleLatLong
 function handleLatLong (lineItem) {
   if (lineItem.latitude && lineItem.longitude || lineItem.polygon) {
     lineItem.lat = lineItem.latitude
@@ -74,7 +71,6 @@ function handleLatLong (lineItem) {
   }
 }
 
-module.exports.pointJSON = pointJSON
 function pointJSON (lineItem, type, optionObj) {
   var lowercaseType = type.toLowerCase()
   var pointFeature = {
@@ -92,7 +88,6 @@ function pointJSON (lineItem, type, optionObj) {
   return pointFeature
 }
 
-module.exports.shapeJSON = shapeJSON
 function shapeJSON (lineItem, type, optionObj) {
   var lowercaseType = type.toLowerCase()
   var coords
@@ -114,7 +109,6 @@ function shapeJSON (lineItem, type, optionObj) {
   return shapeFeature
 }
 
-module.exports.determineType = determineType
 function determineType (lineItem) {
   var type = ''
   if (lineItem.lat && lineItem.long) type = 'Point'
@@ -124,7 +118,7 @@ function determineType (lineItem) {
   return type
 }
 
-module.exports.loadMap = function (mapDiv) {
+function loadMap (mapDiv) {
   var map = L.mapbox.map(mapDiv)
   map.touchZoom.disable()
   map.doubleClickZoom.disable()
@@ -132,12 +126,11 @@ module.exports.loadMap = function (mapDiv) {
   return map
 }
 
-module.exports.addTileLayer = function (map, tileLayer) {
+function addTileLayer (map, tileLayer) {
   var layer = L.mapbox.tileLayer(tileLayer)
   layer.addTo(map)
 }
 
-module.exports.makePopupTemplate = makePopupTemplate
 function makePopupTemplate (geoJSON) {
   var allOptions = geoJSON[0].opts
   var keys = []
@@ -151,7 +144,6 @@ function makePopupTemplate (geoJSON) {
   return template
 }
 
-module.exports.templateString = templateString
 function templateString (mustacheKeys) {
   var template = '<ul>'
   var counter = mustacheKeys.length
@@ -163,7 +155,6 @@ function templateString (mustacheKeys) {
   return template
 }
 
-module.exports.mustachify = mustachify
 function mustachify (array) {
   var newArray = []
   array.forEach(function (item) {
@@ -173,7 +164,7 @@ function mustachify (array) {
   return newArray
 }
 
-module.exports.addMarkerLayer = function (geoJSON, map, template, clusterMarkers) {
+function addMarkerLayer (geoJSON, map, template, clusterMarkers) {
   if (!template) {
     template = makePopupTemplate(geoJSON)
     ich.addTemplate(template.name, template.template)
@@ -216,3 +207,18 @@ module.exports.addMarkerLayer = function (geoJSON, map, template, clusterMarkers
 
   return layer
 }
+
+module.exports.buildOptionObject = buildOptionObject
+module.exports.makeupOptionObject = makeupOptionObject
+module.exports.createGeoJSON = createGeoJSON
+module.exports.confirmGeo = confirmGeo
+module.exports.handleLatLong = handleLatLong
+module.exports.pointJSON = pointJSON
+module.exports.shapeJSON = shapeJSON
+module.exports.determineType = determineType
+module.exports.loadMap = loadMap
+module.exports.addTileLayer = addTileLayer
+module.exports.makePopupTemplate = makePopupTemplate
+module.exports.templateString = templateString
+module.exports.mustachify = mustachify
+module.exports.addMarkerLayer = addMarkerLayer
