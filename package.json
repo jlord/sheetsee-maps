@@ -4,7 +4,8 @@
   "description": "enables map creation functionality with sheetsee.js",
   "main": "index.js",
   "scripts": {
-    "test": "standard"
+    "test": "node test/browserify.js && open test/index.html",
+    "lint": "standard index.js"
   },
   "repository": {
     "type": "git",
