@@ -1,5 +1,6 @@
-var mapbox = require('mapbox.js')
-var ich = require('icanhaz')
+var L = require('leaflet')
+var MarkerClusterGroup = require('leaflet.markercluster')
+var Mustache = require('mustache')
 
 function createGeoJSON (data, optionsJSON) {
   var geoJSON = []
@@ -46,7 +47,6 @@ function makeupOptionObject (lineItem) {
   return options
 }
 
-
 function confirmGeo (lineItem) {
   var hasGeo = false
   if (lineItem.lat && lineItem.long || lineItem.polygon) hasGeo = true
@@ -81,12 +81,27 @@ function pointJSON (lineItem, type, optionObj) {
       'coordinates': [+lineItem.long, +lineItem.lat]
     },
     'properties': {
-      'marker-size': 'small',
-      'marker-color': lineItem.hexcolor
+      'color': lineItem.hexcolor || '#2196f3'
     },
     'opts': optionObj
   }
   return pointFeature
+}
+
+function divIcon (color) {
+  var markerHtmlStyles = 'background-color: #' + color.replace('#', '') + ';' +
+    'width: 2rem; height: 2rem; display: block; left: -1rem; top: -1rem;' +
+    'position: relative; border-radius: 3rem 3rem 0; transform: rotate(45deg);' +
+    'border: 1px solid #FFFFFF'
+  console.log(markerHtmlStyles)
+  var icon = L.divIcon({
+    className: 'div-icon',
+    iconAnchor: [0, 24],
+    labelAnchor: [-6, 0],
+    popupAnchor: [0, -36],
+    html: '<span style="' + markerHtmlStyles + '">'
+  })
+  return icon
 }
 
 function shapeJSON (lineItem, type, optionObj) {
@@ -120,16 +135,21 @@ function determineType (lineItem) {
   return type
 }
 
-function loadMap (mapDiv) {
-  var map = L.mapbox.map(mapDiv)
+// MAPS
+
+function loadMap (mapOptions) {
+  if (!mapOptions.data) return // no data, no map
+  var map = L.map(mapOptions.mapDiv)
+  var tiles = mapOptions.tiles || 'http://{s}.tile.osm.org/{z}/{x}/{y}.png'
+  var attribution = '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+
+  L.tileLayer(tiles, {attribution: attribution}).addTo(map)
+  // Set behavior
   map.touchZoom.disable()
   map.doubleClickZoom.disable()
   map.scrollWheelZoom.disable()
-  return map
-}
-
-function addTileLayer (map, tileLayer) {
-  var layer = L.mapbox.tileLayer(tileLayer)
+  // Add markers
+  var layer = addMarkerLayer(map, mapOptions)
   layer.addTo(map)
 }
 
@@ -137,16 +157,8 @@ function makePopupTemplate (geoJSON) {
   var allOptions = geoJSON[0].opts
   var keys = []
   for (var i in allOptions) keys.push(i)
-
   var mustacheKeys = mustachify(keys)
 
-  var template = {}
-  template.name = 'popup' + Math.random()
-  template.template = templateString(mustacheKeys)
-  return template
-}
-
-function templateString (mustacheKeys) {
   var template = '<ul>'
   var counter = mustacheKeys.length
   mustacheKeys.forEach(function (key) {
@@ -166,61 +178,35 @@ function mustachify (array) {
   return newArray
 }
 
-function addMarkerLayer (geoJSON, map, template, clusterMarkers) {
-  if (!template) {
-    template = makePopupTemplate(geoJSON)
-    ich.addTemplate(template.name, template.template)
-  } else {
-    template = {'template': template}
-    template.name = 'popup' + Math.random()
-    ich.addTemplate(template.name, template.template)
-  }
+function addMarkerLayer (map, mapOpts) {
+  // setting a color in options overides colors in spreadsheet
+  if (mapOpts.hexcolor) var iconColor = mapOpts.hexcolor
+
+  mapOpts.geoJSONincludes = mapOpts.geoJSONincludes || null // um?
+  var geoJSON = createGeoJSON(mapOpts.data, mapOpts.geoJSONincludes)
+
+  // if no popup template, create one
+  if (!mapOpts.template) mapOpts.template = makePopupTemplate(geoJSON)
+
   var features = {
     'type': 'FeatureCollection',
     'features': geoJSON
   }
-  var layer = L.geoJson(features, {
-    pointToLayer: L.mapbox.marker.style,
-    style: function (feature) { return feature.properties }
-  })
-  var bounds = layer.getBounds()
 
-  // check option and Leaflet extension
-  var cluster = clusterMarkers && 'MarkerClusterGroup' in L
-  if (cluster) {
-    var clusterGroup = new L.MarkerClusterGroup()
-  }
-
-  map.fitBounds(bounds)
+  var layer = L.geoJson(features)
 
   layer.eachLayer(function (marker) {
-    var popupContent = ich[template.name](marker.feature.opts)
-    marker.bindPopup(popupContent.html(), {closeButton: false})
-    if (cluster) {
-      clusterGroup.addLayer(marker)
-    }
+    var popupContent = Mustache.render(mapOpts.template, marker.feature.opts)
+    marker.bindPopup(popupContent, {closeButton: false})
+    marker.setIcon(divIcon(iconColor || marker.feature.properties.color))
+    // if (mapOpts.cluster) {
+    //   clusterGroup.addLayer(marker)
+    // }
   })
 
-  if (cluster) {
-    map.addLayer(clusterGroup)
-  } else {
-    layer.addTo(map)
-  }
-
+  map.fitBounds(layer.getBounds())
   return layer
 }
 
-module.exports.buildOptionObject = buildOptionObject
-module.exports.makeupOptionObject = makeupOptionObject
 module.exports.createGeoJSON = createGeoJSON
-module.exports.confirmGeo = confirmGeo
-module.exports.handleLatLong = handleLatLong
-module.exports.pointJSON = pointJSON
-module.exports.shapeJSON = shapeJSON
-module.exports.determineType = determineType
 module.exports.loadMap = loadMap
-module.exports.addTileLayer = addTileLayer
-module.exports.makePopupTemplate = makePopupTemplate
-module.exports.templateString = templateString
-module.exports.mustachify = mustachify
-module.exports.addMarkerLayer = addMarkerLayer
