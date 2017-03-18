@@ -73,7 +73,6 @@ function handleLatLong (lineItem) {
 }
 
 function pointJSON (lineItem, type, optionObj) {
-  var lowercaseType = type.toLowerCase()
   var pointFeature = {
     type: 'Feature',
     'geometry': {
@@ -91,9 +90,7 @@ function pointJSON (lineItem, type, optionObj) {
 function divIcon (color) {
   var markerHtmlStyles = 'background-color: #' + color.replace('#', '') + ';' +
     'width: 2rem; height: 2rem; display: block; left: -1rem; top: -1rem;' +
-    'position: relative; border-radius: 3rem 3rem 0; transform: rotate(45deg);' +
-    'border: 1px solid #FFFFFF'
-  console.log(markerHtmlStyles)
+    'position: relative; border-radius: 3rem 3rem 0; transform: rotate(45deg);'
   var icon = L.divIcon({
     className: 'div-icon',
     iconAnchor: [0, 24],
@@ -148,9 +145,7 @@ function loadMap (mapOptions) {
   map.touchZoom.disable()
   map.doubleClickZoom.disable()
   map.scrollWheelZoom.disable()
-  // Add markers
-  var layer = addMarkerLayer(map, mapOptions)
-  layer.addTo(map)
+  addMarkerLayer(map, mapOptions)
 }
 
 function makePopupTemplate (geoJSON) {
@@ -188,24 +183,37 @@ function addMarkerLayer (map, mapOpts) {
   // if no popup template, create one
   if (!mapOpts.template) mapOpts.template = makePopupTemplate(geoJSON)
 
-  var features = {
-    'type': 'FeatureCollection',
-    'features': geoJSON
-  }
+  var features = {'type': 'FeatureCollection', 'features': geoJSON}
 
+  if (mapOpts.cluster) var clusterGroup = new L.MarkerClusterGroup()
   var layer = L.geoJson(features)
 
   layer.eachLayer(function (marker) {
     var popupContent = Mustache.render(mapOpts.template, marker.feature.opts)
     marker.bindPopup(popupContent, {closeButton: false})
     marker.setIcon(divIcon(iconColor || marker.feature.properties.color))
-    // if (mapOpts.cluster) {
-    //   clusterGroup.addLayer(marker)
-    // }
+    if (mapOpts.cluster) clusterGroup.addLayer(marker)
   })
 
   map.fitBounds(layer.getBounds())
-  return layer
+
+  if (mapOpts.cluster) {
+    map.addLayer(clusterGroup)
+    addClusterCSS(iconColor || '#2196f3')
+  } else layer.addTo(map)
+}
+
+function addClusterCSS (color) {
+  if (!color.match('#')) color += '#'
+  var css = '.marker-cluster-small, .marker-cluster-small div, .marker-cluster-medium,' +
+      '.marker-cluster-medium div, .marker-cluster-large, .marker-cluster-large div' +
+      '{background-color:' + color + ';} .marker-cluster {background-clip: padding-box; border-radius: 20px;}' +
+      '.marker-cluster div {width: 30px; height: 30px; margin-left: 5px; margin-top: 5px;' +
+      'text-align: center; border-radius: 15px; font: 12px "Helvetica Neue", Arial, Helvetica, sans-serif;}' +
+      '.marker-cluster span {line-height: 30px;}'
+  var style = document.createElement('style')
+  style.innerHTML = css
+  document.head.appendChild(style)
 }
 
 module.exports.createGeoJSON = createGeoJSON
