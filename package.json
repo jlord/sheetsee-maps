@@ -20,8 +20,12 @@
     "maps"
   ],
   "dependencies": {
+    "leaflet": "^1.0.3",
+    "leaflet.markercluster": "^1.0.4",
+    "mustache": "^2.3.0"
   },
   "devDependencies": {
+    "browserify": "^14.1.0",
     "standard": "^8.6.0",
     "tape": "^4.6.3"
   }
