@@ -1,9 +1,11 @@
+[![Standard - JavaScript Style Guide](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
+
 # sheetsee-maps
 
 see: [jlord.github.io/sheetsee.js](http://jlord.github.io/sheetsee.js)
 demo: [maps](http://jlord.github.io/sheetsee.js/demos/demo-map.html)
 
-Sheetsee.js uses this module to handle maps in your projects. This module uses [Leaflet.js](http://leafletjs.com) to make maps of your **points**, **polygons**, **lines** or **multipolygons** (all coordinate based). Details on what that actually looks like [here](http://leafletjs.com/examples/geojson.html). It uses [Mustache.js](https://mustache.github.io) templates for marker popups.
+Sheetsee.js uses this module to handle maps in your projects. This module uses [Leaflet.js](http://leafletjs.com) to make maps of your **points**, **polygons**, **lines** or **multipolygons** (all coordinate based). Details on what that actually looks like [here](http://leafletjs.com/examples/geojson.html). It uses [Mustache.js](https://mustache.github.io) templates for marker popups. It is used with other modules to make [sheetsee.js](http://jlord.us/sheetsee.js).
 
 ## Maps: Polygons and Lines
 
