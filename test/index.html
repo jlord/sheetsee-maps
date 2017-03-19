@@ -1,25 +1,23 @@
-
 <!DOCTYPE html>
 <html>
   <head>
     <meta charset='utf-8'>
     <title>Sheetsee Maps Demo</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'/>
     <script type='text/javascript' src='./data.js'></script>
     <script type='text/javascript' src='./sheetsee.js'></script>
-    <link rel='stylesheet' type='text/css' href='http://api.tiles.mapbox.com/mapbox.js/v1.0.0/mapbox.css'  />
   </head>
   <style>
     #map {max-width: 800px; height: 500px;}
     .leaflet-popup-content {width: 102px;}
   </style>
   <body>
-    <div class="container">
-      <h1>All Pennies  Map</h1>
-      <div id="map"></div>
+    <div class='container'>
+      <h1>Test Map</h1>
+      <div id='map'></div>
     </div>
 
-    <script type="text/javascript">
+    <script type='text/javascript'>
       document.addEventListener('DOMContentLoaded', function() {
         showInfo(data)
       })
@@ -27,11 +25,11 @@
       function showInfo(data) {
         var mapOptions = {
           data: data,
-          geoJSONincludes: ["Name", "Animal", "Rating"],
-          template: "<p>{{Name}}—{{Animal}}—{{Rating}}</p>",
+          geoJSONincludes: ['Name', 'Animal', 'Rating'],
+          template: '<p>{{Name}}—{{Animal}}—{{Rating}}</p>',
           mapDiv: 'map',
           cluster: true,
-          hexcolor: "#e91e63"
+          hexcolor: '#e91e63'
         }
         Sheetsee.loadMap(mapOptions)
       }
