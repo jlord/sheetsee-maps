@@ -1,6 +1,7 @@
-var L = require('leaflet')
-var MarkerClusterGroup = require('leaflet.markercluster')
 var Mustache = require('mustache')
+
+var L = require('leaflet')
+require('leaflet.markercluster')
 
 function createGeoJSON (data, optionsJSON) {
   var geoJSON = []
