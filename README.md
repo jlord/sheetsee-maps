@@ -2,37 +2,44 @@
 
 # sheetsee-maps
 
-see: [jlord.github.io/sheetsee.js](http://jlord.github.io/sheetsee.js)
-demo: [maps](http://jlord.github.io/sheetsee.js/demos/demo-map.html)
+Sheetsee uses this module to handle maps in your projects. This module uses (and includes) [Leaflet.js](http://leafletjs.com) to make maps of your **points**, **polygons**, **lines** or **multipolygons** (all coordinate based). Details on what that actually looks like [here](http://leafletjs.com/examples/geojson.html). It uses (and includes) [Mustache.js](https://mustache.github.io) templates for marker popups.
 
-Sheetsee.js uses this module to handle maps in your projects. This module uses [Leaflet.js](http://leafletjs.com) to make maps of your **points**, **polygons**, **lines** or **multipolygons** (all coordinate based). Details on what that actually looks like [here](http://leafletjs.com/examples/geojson.html). It uses [Mustache.js](https://mustache.github.io) templates for marker popups. It is used with other modules to make [sheetsee.js](http://jlord.us/sheetsee.js).
+You'll need to include Leaflet's map CSS in your HTML's head:
+
+```html
+<head>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+</head>
+```
 
 ## Maps: Polygons and Lines
 
 Sheetsee-maps supports polygons and lines; so long as you have the correct coordinate structure in your cells. More details for coordinates of lines and polygons in geoJSON are [here](http://leafletjs.com/examples/geojson.html), but briefly:
 
+**Must use lowercase spreadsheet column headers: 'lat' and 'long'.**
+
 **A linestring:**
 
-```
+```text
 [-122.41722106933594, 37.7663045891584], [-122.40477561950684, 37.77695634643178]
 ```
 
 **A polygon:**
 
-```
+```text
 [-122.41790771484375, 37.740381166384914], [-122.41790771484375, 37.74520008134973], [-122.40966796874999, 37.74520008134973],[-122.40966796874999, 37.740381166384914], [-122.41790771484375, 37.740381166384914]
 ```
 
 **A Multipolygon:**
 
-```
+```text
 [[-122.431640625, 37.79106586542567], [-122.431640625, 37.797441398913286], [-122.42666244506835, 37.797441398913286],[-122.42666244506835, 37.79106586542567], [-122.431640625, 37.79106586542567]],
 [[-122.43352890014648, 37.78197638783258], [-122.43352890014648, 37.789031004883654], [-122.42443084716797, 37.789031004883654], [-122.42443084716797, 37.78197638783258], [-122.43352890014648, 37.78197638783258]]
 ```
 
 ## To Use
 
-This module is used as a part of [Sheetsee.js](http://jlord.us/sheetsee.js). You can download the [full version]() or build your own with a [command line tool](https://github.com/jlord/sheetsee).
+This module is used as a part of [Sheetsee.js](http://jlord.us/sheetsee.js). You can download the [full version](https://github.com/jlord/sheetsee.js/blob/master/js/sheetsee.js) or build your own with a [command line tool](https://github.com/jlord/sheetsee).
 
 You'll create a little bit of HTML and then some JavaScript in your HTML to use this. You can customize marker color, popup content and enable/disable clustering in your map.
 
@@ -77,10 +84,12 @@ var mapOptions = {
   cluster: true, // optional
   hexcolor: '#e91e63' // optional
 }
-
-var map = Sheetsee.loadMap("map")
+Sheetsee.loadMap("map")
 ```
 
 #### Marker colors
 
 If you create a column title `hexcolor` in your spreadsheet and fill each cell with hex color codes, those will be used to color your markers. If you define a color in `hexcolors` in the options you pass to your map it will override colors in the spreadsheet data.
+
+_[View Demo](http://jlord.us/sheetsee.js/demos/demo-maps.html)_
+_[Visit Site](http://jlord.us/sheetsee.js)_
