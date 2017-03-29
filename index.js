@@ -1,24 +1,9 @@
-var mapbox = require('mapbox.js')
-var ich = require('icanhaz')
+var Mustache = require('mustache')
 
-module.exports.buildOptionObject = buildOptionObject
-function buildOptionObject (optionsJSON, lineItem) {
-  var newObj = {}
-  optionsJSON.forEach(function (option) {
-    newObj[option] = lineItem[option]
-  })
-  return newObj
-}
+var L = require('leaflet')
+require('leaflet.markercluster')
 
-module.exports.makeupOptionObject = function (lineItem) {
-  var options = []
-  for (var i in lineItem) {
-    options.push(i)
-  }
-  return options
-}
-
-module.exports.createGeoJSON = function (data, optionsJSON) {
+function createGeoJSON (data, optionsJSON) {
   var geoJSON = []
   data.forEach(function (lineItem) {
     var hasGeo = confirmGeo(lineItem)
@@ -47,7 +32,22 @@ module.exports.createGeoJSON = function (data, optionsJSON) {
   return geoJSON
 }
 
-module.exports.confirmGeo = confirmGeo
+function buildOptionObject (optionsJSON, lineItem) {
+  var newObj = {}
+  optionsJSON.forEach(function (option) {
+    newObj[option] = lineItem[option]
+  })
+  return newObj
+}
+
+function makeupOptionObject (lineItem) {
+  var options = []
+  for (var i in lineItem) {
+    options.push(i)
+  }
+  return options
+}
+
 function confirmGeo (lineItem) {
   var hasGeo = false
   if (lineItem.lat && lineItem.long || lineItem.polygon) hasGeo = true
@@ -56,7 +56,6 @@ function confirmGeo (lineItem) {
   return hasGeo
 }
 
-module.exports.handleLatLong = handleLatLong
 function handleLatLong (lineItem) {
   if (lineItem.latitude && lineItem.longitude || lineItem.polygon) {
     lineItem.lat = lineItem.latitude
@@ -74,9 +73,7 @@ function handleLatLong (lineItem) {
   }
 }
 
-module.exports.pointJSON = pointJSON
 function pointJSON (lineItem, type, optionObj) {
-  var lowercaseType = type.toLowerCase()
   var pointFeature = {
     type: 'Feature',
     'geometry': {
@@ -84,15 +81,27 @@ function pointJSON (lineItem, type, optionObj) {
       'coordinates': [+lineItem.long, +lineItem.lat]
     },
     'properties': {
-      'marker-size': 'small',
-      'marker-color': lineItem.hexcolor
+      'color': lineItem.hexcolor || '#2196f3'
     },
     'opts': optionObj
   }
   return pointFeature
 }
 
-module.exports.shapeJSON = shapeJSON
+function divIcon (color) {
+  var markerHtmlStyles = 'background-color: #' + color.replace('#', '') + ';' +
+    'width: 2rem; height: 2rem; display: block; left: -1rem; top: -1rem; border: 1px solid #fff;' +
+    'position: relative; border-radius: 3rem 3rem 0; transform: rotate(45deg);'
+  var icon = L.divIcon({
+    className: 'div-icon',
+    iconAnchor: [0, 24],
+    labelAnchor: [-6, 0],
+    popupAnchor: [0, -36],
+    html: '<span style="' + markerHtmlStyles + '">'
+  })
+  return icon
+}
+
 function shapeJSON (lineItem, type, optionObj) {
   var lowercaseType = type.toLowerCase()
   var coords
@@ -114,9 +123,9 @@ function shapeJSON (lineItem, type, optionObj) {
   return shapeFeature
 }
 
-module.exports.determineType = determineType
 function determineType (lineItem) {
   var type = ''
+  // TODO this is not actually verifying the content just the property
   if (lineItem.lat && lineItem.long) type = 'Point'
   if (lineItem.polygon) type = 'Polygon'
   if (lineItem.multipolygon) type = 'MultiPolygon'
@@ -124,35 +133,28 @@ function determineType (lineItem) {
   return type
 }
 
-module.exports.loadMap = function (mapDiv) {
-  var map = L.mapbox.map(mapDiv)
+// MAPS
+
+function loadMap (mapOptions) {
+  if (!mapOptions.data) return // no data, no map
+  var map = L.map(mapOptions.mapDiv)
+  var tiles = mapOptions.tiles || 'http://{s}.tile.osm.org/{z}/{x}/{y}.png'
+  var attribution = '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+
+  L.tileLayer(tiles, {attribution: attribution}).addTo(map)
+  // Set behavior
   map.touchZoom.disable()
   map.doubleClickZoom.disable()
   map.scrollWheelZoom.disable()
-  return map
+  addMarkerLayer(map, mapOptions)
 }
 
-module.exports.addTileLayer = function (map, tileLayer) {
-  var layer = L.mapbox.tileLayer(tileLayer)
-  layer.addTo(map)
-}
-
-module.exports.makePopupTemplate = makePopupTemplate
 function makePopupTemplate (geoJSON) {
   var allOptions = geoJSON[0].opts
   var keys = []
   for (var i in allOptions) keys.push(i)
-
   var mustacheKeys = mustachify(keys)
 
-  var template = {}
-  template.name = 'popup' + Math.random()
-  template.template = templateString(mustacheKeys)
-  return template
-}
-
-module.exports.templateString = templateString
-function templateString (mustacheKeys) {
   var template = '<ul>'
   var counter = mustacheKeys.length
   mustacheKeys.forEach(function (key) {
@@ -163,7 +165,6 @@ function templateString (mustacheKeys) {
   return template
 }
 
-module.exports.mustachify = mustachify
 function mustachify (array) {
   var newArray = []
   array.forEach(function (item) {
@@ -173,46 +174,48 @@ function mustachify (array) {
   return newArray
 }
 
-module.exports.addMarkerLayer = function (geoJSON, map, template, clusterMarkers) {
-  if (!template) {
-    template = makePopupTemplate(geoJSON)
-    ich.addTemplate(template.name, template.template)
-  } else {
-    template = {'template': template}
-    template.name = 'popup' + Math.random()
-    ich.addTemplate(template.name, template.template)
-  }
-  var features = {
-    'type': 'FeatureCollection',
-    'features': geoJSON
-  }
-  var layer = L.geoJson(features, {
-    pointToLayer: L.mapbox.marker.style,
-    style: function (feature) { return feature.properties }
-  })
-  var bounds = layer.getBounds()
+function addMarkerLayer (map, mapOpts) {
+  // setting a color in options overides colors in spreadsheet
+  if (mapOpts.hexcolor) var iconColor = mapOpts.hexcolor
 
-  // check option and Leaflet extension
-  var cluster = clusterMarkers && 'MarkerClusterGroup' in L
-  if (cluster) {
-    var clusterGroup = new L.MarkerClusterGroup()
-  }
+  mapOpts.geoJSONincludes = mapOpts.geoJSONincludes || null // um?
+  var geoJSON = createGeoJSON(mapOpts.data, mapOpts.geoJSONincludes)
 
-  map.fitBounds(bounds)
+  // if no popup template, create one
+  if (!mapOpts.template) mapOpts.template = makePopupTemplate(geoJSON)
+
+  var features = {'type': 'FeatureCollection', 'features': geoJSON}
+
+  if (mapOpts.cluster) var clusterGroup = new L.MarkerClusterGroup()
+  var layer = L.geoJson(features)
 
   layer.eachLayer(function (marker) {
-    var popupContent = ich[template.name](marker.feature.opts)
-    marker.bindPopup(popupContent.html(), {closeButton: false})
-    if (cluster) {
-      clusterGroup.addLayer(marker)
-    }
+    var popupContent = Mustache.render(mapOpts.template, marker.feature.opts)
+    marker.bindPopup(popupContent, {closeButton: false})
+    marker.setIcon(divIcon(iconColor || marker.feature.properties.color))
+    if (mapOpts.cluster) clusterGroup.addLayer(marker)
   })
 
-  if (cluster) {
-    map.addLayer(clusterGroup)
-  } else {
-    layer.addTo(map)
-  }
+  map.fitBounds(layer.getBounds())
 
-  return layer
+  if (mapOpts.cluster) {
+    map.addLayer(clusterGroup)
+    addClusterCSS(iconColor || '#2196f3')
+  } else layer.addTo(map)
 }
+
+function addClusterCSS (color) {
+  if (!color.match('#')) color += '#'
+  var css = '.marker-cluster-small, .marker-cluster-small div, .marker-cluster-medium,' +
+      '.marker-cluster-medium div, .marker-cluster-large, .marker-cluster-large div' +
+      '{background-color:' + color + ';} .marker-cluster {background-clip: padding-box; border-radius: 20px;}' +
+      '.marker-cluster div {width: 30px; height: 30px; margin-left: 5px; margin-top: 5px;' +
+      'text-align: center; border-radius: 15px; font: 12px "Helvetica Neue", Arial, Helvetica, sans-serif;}' +
+      '.marker-cluster span {line-height: 30px;}'
+  var style = document.createElement('style')
+  style.innerHTML = css
+  document.head.appendChild(style)
+}
+
+module.exports.createGeoJSON = createGeoJSON
+module.exports.loadMap = loadMap

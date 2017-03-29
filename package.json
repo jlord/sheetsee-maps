@@ -1,10 +1,11 @@
 {
   "name": "sheetsee-maps",
-  "version": "0.2.4",
+  "version": "1.0.0",
   "description": "enables map creation functionality with sheetsee.js",
   "main": "index.js",
   "scripts": {
-    "test": "standard"
+    "test": "node test/browserify.js && open test/index.html",
+    "lint": "standard index.js"
   },
   "repository": {
     "type": "git",
@@ -20,10 +21,13 @@
     "maps"
   ],
   "dependencies": {
-    "mapbox.js": "~1.3.1",
-    "icanhaz": "~0.10.3"
+    "leaflet": "^1.0.3",
+    "leaflet.markercluster": "^1.0.4",
+    "mustache": "^2.3.0"
   },
   "devDependencies": {
-    "standard": "^8.6.0"
+    "browserify": "^14.1.0",
+    "standard": "^8.6.0",
+    "tape": "^4.6.3"
   }
 }
