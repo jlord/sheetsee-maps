@@ -90,7 +90,7 @@ function pointJSON (lineItem, type, optionObj) {
 
 function divIcon (color) {
   var markerHtmlStyles = 'background-color: #' + color.replace('#', '') + ';' +
-    'width: 2rem; height: 2rem; display: block; left: -1rem; top: -1rem;' +
+    'width: 2rem; height: 2rem; display: block; left: -1rem; top: -1rem; border: 1px solid #fff;' +
     'position: relative; border-radius: 3rem 3rem 0; transform: rotate(45deg);'
   var icon = L.divIcon({
     className: 'div-icon',
