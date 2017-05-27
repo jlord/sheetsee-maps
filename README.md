@@ -16,7 +16,7 @@ You'll need to include Leaflet's map CSS in your HTML's head:
 
 Sheetsee-maps supports polygons and lines; so long as you have the correct coordinate structure in your cells. More details for coordinates of lines and polygons in geoJSON are [here](http://leafletjs.com/examples/geojson.html), but briefly:
 
-**Must use lowercase spreadsheet column headers: 'lat' and 'long'.**
+**Must use lowercase spreadsheet column headers: 'linestring', 'polygon', 'multipolygon' and then have cell content like so:**
 
 **A linestring:**
 
